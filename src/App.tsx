@@ -1,26 +1,93 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
 
-function App() {
+export const api = axios.create({
+  baseURL: 'https://api.github.com/search',
+});
+
+const App = () => {
+  const [list, setList] = useState<string[]>([]);
+  const [reactResults, setReactResults] = useState<number>(0);
+  const [nodeResults, setNodeResults] = useState<number>(0);
+  const [angularResults, setAngularResults] = useState<number>(0);
+
+  useEffect(() => {
+    console.log(list, 'list');
+  }, [list]);
+
+  const addToList = (q: string) => {
+    const timestamp = new Date().toLocaleString();
+    const text = `${q} - ${timestamp}`;
+
+    const newList = [...list, text];
+    setList(newList);
+    console.log(text, 'add');
+
+    return text;
+  };
+
+  const removeFromList = (text: string) => {
+    const newList = list.filter((item) => item !== text);
+
+    setList(newList);
+    console.log(newList, 'remove');
+  };
+
+  const handleCallApi = useCallback(
+    async (q: string) => {
+      const text = addToList(q);
+
+      try {
+        const response = await api.get('/repositories', { params: { q } });
+        return response.data.total_count;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        removeFromList(text);
+      }
+    },
+    [list]
+  );
+
+  const handleNodeResults = useCallback(async () => {
+    setNodeResults(await handleCallApi('node'));
+  }, []);
+
+  const handleReactResults = useCallback(async () => {
+    setReactResults(await handleCallApi('react'));
+  }, []);
+
+  const handleAngularResults = useCallback(async () => {
+    setAngularResults(await handleCallApi('angular'));
+  }, []);
+
+  const fireApiCalls = useCallback(async () => {
+    handleNodeResults();
+    handleReactResults();
+    handleAngularResults();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <button type="button" onClick={() => fireApiCalls()}>
+        Call Api
+      </button>
+
+      <h1>Number of repositórios Github</h1>
+      <p>
+        <strong>Node: </strong>
+        {nodeResults.toString()}
+      </p>
+      <p>
+        <strong>React: </strong>
+        {reactResults.toString()}
+      </p>
+      <p>
+        <strong>Angular: </strong>
+        {angularResults.toString()}
+      </p>
     </div>
   );
-}
+};
 
 export default App;
