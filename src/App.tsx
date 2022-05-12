@@ -30,7 +30,7 @@ const App = () => {
     const newList = list.filter((item) => item !== text);
 
     setList(newList);
-    console.log(newList, 'remove');
+    console.log(`should remove ${text}`);
   };
 
   const handleCallApi = useCallback(
