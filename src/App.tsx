@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
 export const api = axios.create({
   baseURL: 'https://api.github.com/search',
@@ -73,7 +73,7 @@ const App = () => {
         Call Api
       </button>
 
-      <h1>Number of repositórios Github</h1>
+      <h1>Number of Github repositories</h1>
       <p>
         <strong>Node: </strong>
         {nodeResults.toString()}
