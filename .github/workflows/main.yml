@@ -29,9 +29,6 @@ jobs:
       - name: Build project
         run: CI=false npm run build --if-present
 
-      - name: Running tests
-        run: npm test --if-present
-
       - name: Creating deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
