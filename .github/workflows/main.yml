@@ -38,7 +38,7 @@ jobs:
   #         path: ${{ github.sha }}.tar.gz
   prepare-release:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     name: Upload to server (Testing vpn)
     steps:
       - name: Install OpenVPN
