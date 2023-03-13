@@ -61,17 +61,17 @@ jobs:
         timeout-minutes: 1
         run: until ping -c1 your-server-address; do sleep 2; done
         # OR
-        run: until dig @your-dns-resolver your-server-address A +time=1; do sleep 2; done
+        # run: until dig @your-dns-resolver your-server-address A +time=1; do sleep 2; done
 
       - name: output
         run: echo OK!
       # ssh aqui
-  
+
       - name: Kill VPN connection
         if: always()
         run: |
           sudo chmod 777 vpn.log
-          sudo killall openvpn          
+          sudo killall openvpn
 
       - name: Upload VPN logs
         uses: actions/upload-artifact@v2
