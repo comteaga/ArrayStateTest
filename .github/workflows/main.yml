@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
@@ -8,34 +5,77 @@ on:
     branches: ['main']
 
 jobs:
-  build:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   name: Build artifact
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
+
+  #     - name: Installing dependencies
+  #       run: npm ci
+
+  #     - name: Build project
+  #       run: CI=false npm run build --if-present
+
+  #     - name: Creating deployment artifact
+  #       env:
+  #         GITHUB_SHA: ${{ github.sha }}
+  #       run: tar -czf "${GITHUB_SHA}".tar.gz build
+
+  #     - name: Storing artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: app-build
+  #         path: ${{ github.sha }}.tar.gz
+  prepare-release:
     runs-on: ubuntu-latest
-    name: Build artifact
-    strategy:
-      matrix:
-        node-version: [16.x]
-
+    needs: build
+    name: Upload to server (Testing vpn)
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+      - name: Install OpenVPN
+        run: |
+          sudo apt-get update
+          sudo apt-get --assume-yes --no-install-recommends install openvpn
 
-      - name: Installing dependencies
-        run: npm ci
+      - name: Setup VPN config
+        run: |
+          echo "${{ secrets.CA_CRT }}" > ca.crt
+          echo "${{ secrets.USER_CRT }}" > user.crt
+          echo "${{ secrets.USER_KEY }}" > user.key
+          echo "${{ secrets.SECRET_USERNAME_PASSWORD }}" > secret.txt
+          echo "${{ secrets.TLS_KEY }}" > tls.key
 
-      - name: Build project
-        run: CI=false npm run build --if-present
+      - name: Connect VPN
+        run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
-      - name: Creating deployment artifact
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf "${GITHUB_SHA}".tar.gz build
+      - name: Wait for a VPN connection
+        timeout-minutes: 1
+        run: until ping -c1 your-server-address; do sleep 2; done
+        # OR
+        run: until dig @your-dns-resolver your-server-address A +time=1; do sleep 2; done
 
-      - name: Storing artifact
+      - name: output
+        run: echo OK!
+      # ssh aqui
+  
+      - name: Kill VPN connection
+        if: always()
+        run: |
+          sudo chmod 777 vpn.log
+          sudo killall openvpn          
+
+      - name: Upload VPN logs
         uses: actions/upload-artifact@v2
+        if: always()
         with:
-          name: app-build
-          path: ${{ github.sha }}.tar.gz
+          name: VPN logs
+          path: vpn.log
