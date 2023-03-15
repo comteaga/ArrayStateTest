@@ -42,10 +42,10 @@ jobs:
     name: Connect to VPN
     steps:
       - uses: actions/checkout@v3
-      - name: Install OpenVPN
-        run: |
-          sudo apt-get update
-          sudo apt-get --assume-yes --no-install-recommends install openvpn
+      # - name: Install OpenVPN
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get --assume-yes --no-install-recommends install openvpn
 
       - name: Setup VPN config
         run: |
@@ -66,7 +66,7 @@ jobs:
         run: cat .github/vpn/config.ovpn
 
       - name: cat
-        run: cat .github/vpn/config.auth.txt
+        run: cat .github/vpn/auth.txt
 
       - name: cat
         run: cat auth.txt
