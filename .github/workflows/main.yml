@@ -52,7 +52,6 @@ jobs:
           echo "${{ secrets.TLS_KEY }}" > tls.key
           echo "${{ secrets.AUTH }}" > auth.txt
 
-
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
@@ -61,12 +60,13 @@ jobs:
         run: until ping -c1 ${{ secrets.SERVER_ADDRESS }}; do sleep 2; done
         # OR
         # run: until dig @your-dns-resolver your-server-address A +time=1; do sleep 2; done
-  
+
   prepare-release:
     runs-on: ubuntu-latest
     needs: connect-vpn
-    name: Preparing release 
-      - name: echo
+    name: Preparing release
+    steps:
+      - name: msg
         run: echo aqui
 
   disconnect-vpn:
