@@ -57,6 +57,10 @@ jobs:
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
+      # with vpn log file
+      # - name: Connect VPN
+      #   run: sudo openvpn --config ".github/vpn/config.ovpn" --daemon
+
       - name: Wait for a VPN connection
         timeout-minutes: 1
         run: until ping -c 1 ${{ secrets.SERVER_ADDRESS }}; do sleep 2; done
@@ -66,7 +70,6 @@ jobs:
       #   name: Downloading artifact
       #   with:
       #     name: app-build
-
       # - name: Uploading to server
       #   uses: appleboy/scp-action@master
       #   with:
@@ -76,7 +79,6 @@ jobs:
       #     port: 22
       #     source: ${{ github.sha }}.tar.gz
       #     target: /tmp/
-
       # - name: Extracting files
       #   uses: appleboy/ssh-action@master
       #   with:
@@ -87,16 +89,20 @@ jobs:
       #     script: |
       #       mkdir -p /home/project/releases/${{ github.sha }}
       #       tar -xzf /temp/${{ github.sha }}.tar.gz -C /home/project/releases/${{ github.sha }}
-
       - name: Kill VPN connection
         if: always()
         run: |
-          sudo chmod 777 vpn.log
           sudo killall openvpn
 
-      - name: Upload VPN logs
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: VPN logs
-          path: vpn.log
+        # with vpn log file
+        # run: |
+        #   sudo chmod 777 vpn.log
+        #   sudo killall openvpn
+
+      # with vpn log file
+      # - name: Upload VPN logs
+      #   uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: VPN logs
+      #     path: vpn.log
