@@ -42,25 +42,16 @@ jobs:
     name: Connect to VPN
     steps:
       - uses: actions/checkout@v3
-      # - name: Install OpenVPN
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get --assume-yes --no-install-recommends install openvpn
+      - name: Install OpenVPN
+        run: |
+          sudo apt-get update
+          sudo apt-get --assume-yes --no-install-recommends install openvpn
 
-      # - name: Setup VPN config
-      #   run: |
-      #     echo "${{ secrets.CA_CRT }}" > ca.crt
-      #     echo "${{ secrets.TLS_KEY }}" > tls.key
-      #     echo "${{ secrets.AUTH }}" > auth.txt
-
-      - name: ls normal
-        run: ls -a
-
-      - name: ls github.workspace
-        run: ls ${{ github.workspace }}
-
-      - name: msg
-        run: cat .github/vpn/config.ovpn
+      - name: Setup VPN config
+        run: |
+          echo "${{ secrets.CA_CRT }}" > ca.crt
+          echo "${{ secrets.TLS_KEY }}" > tls.key
+          echo "${{ secrets.AUTH }}" > auth.txt
 
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
