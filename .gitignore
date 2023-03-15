@@ -24,4 +24,5 @@ yarn-error.log*
 
 .github/vpn/auth.txt
 .github/vpn/ca.cert
+.github/vpn/ca.crt
 .github/vpn/tls.key
