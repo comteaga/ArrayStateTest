@@ -52,6 +52,12 @@ jobs:
           echo "${{ secrets.TLS_KEY }}" > tls.key
           echo "${{ secrets.AUTH }}" > auth.txt
 
+        - name: ls
+          run: ls
+
+        - name: msg
+          run: cat .github/vpn/config.ovpn
+
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
