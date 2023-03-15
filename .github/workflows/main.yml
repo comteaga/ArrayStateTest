@@ -41,6 +41,7 @@ jobs:
     # needs: build
     name: Connect to VPN
     steps:
+      - uses: actions/checkout@v3
       # - name: Install OpenVPN
       #   run: |
       #     sudo apt-get update
@@ -52,20 +53,11 @@ jobs:
       #     echo "${{ secrets.TLS_KEY }}" > tls.key
       #     echo "${{ secrets.AUTH }}" > auth.txt
 
-      - name: ls
-        run: ls -a ${{ github.workspace }}
-
-      - name: cd
-        run: cd ${{ github.workspace }}
-
-      - name: pwd
-        run: pwd
-
-      - name: pwd
-        run: pwd
-
-      - name: ls
+      - name: ls normal
         run: ls -a
+
+      - name: ls github.workspace
+        run: ls ${{ github.workspace }}
 
       - name: msg
         run: cat .github/vpn/config.ovpn
