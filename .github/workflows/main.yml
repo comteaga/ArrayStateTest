@@ -65,6 +65,12 @@ jobs:
       - name: cat
         run: cat .github/vpn/config.ovpn
 
+      - name: cat
+        run: cat .github/vpn/config.auth.txt
+
+      - name: cat
+        run: cat auth.txt
+
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
