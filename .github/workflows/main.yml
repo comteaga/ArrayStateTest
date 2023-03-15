@@ -71,7 +71,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
+          password: ${{ secrets.KEY }}
           port: 22
           source: test_${{ github.sha }}.txt
           target: /tmp/${{ github.repository }}/
