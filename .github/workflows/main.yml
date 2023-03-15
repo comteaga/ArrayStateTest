@@ -49,9 +49,15 @@ jobs:
 
       - name: Setup VPN config
         run: |
-          echo "${{ secrets.CA_CRT }}" > ca.crt
-          echo "${{ secrets.TLS_KEY }}" > tls.key
-          echo "${{ secrets.AUTH }}" > auth.txt
+          echo "${{ secrets.CA_CRT }}" > .github/vpn/ca.crt
+          echo "${{ secrets.TLS_KEY }}" > .github/vpn/tls.key
+          echo "${{ secrets.AUTH }}" > .github/vpn/auth.txt
+
+      # - name: ls
+      #   run: ls -a
+
+      # - name: cat
+      #   run: .github/vpn/config.ovpn
 
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
