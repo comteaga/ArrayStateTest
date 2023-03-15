@@ -52,6 +52,9 @@ jobs:
           echo "${{ secrets.TLS_KEY }}" > tls.key
           echo "${{ secrets.AUTH }}" > auth.txt
 
+      - name: pwd
+        run: pwd
+
       - name: ls
         run: ls
 
