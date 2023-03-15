@@ -5,38 +5,38 @@ on:
     branches: ['main']
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: Build artifact
-    strategy:
-      matrix:
-        node-version: [16.x]
+  # build:
+  #   runs-on: ubuntu-latest
+  #   name: Build artifact
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
 
-      - name: Installing dependencies
-        run: npm ci
+  #     - name: Installing dependencies
+  #       run: npm ci
 
-      - name: Build project
-        run: CI=false npm run build --if-present
+  #     - name: Build project
+  #       run: CI=false npm run build --if-present
 
-      - name: Creating deployment artifact
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf "${GITHUB_SHA}".tar.gz build
+  #     - name: Creating deployment artifact
+  #       env:
+  #         GITHUB_SHA: ${{ github.sha }}
+  #       run: tar -czf "${GITHUB_SHA}".tar.gz build
 
-      - name: Storing artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: app-build
-          path: ${{ github.sha }}.tar.gz
-          retention-days: 1
+  #     - name: Storing artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: app-build
+  #         path: ${{ github.sha }}.tar.gz
+  #         retention-days: 1
 
   connect-vpn:
     runs-on: ubuntu-latest
@@ -58,73 +58,70 @@ jobs:
       - name: Connect VPN
         run: sudo openvpn --config ".github/vpn/config.ovpn" --log "vpn.log" --daemon
 
-      # with vpn log file
-      # - name: Connect VPN
-      #   run: sudo openvpn --config ".github/vpn/config.ovpn" --daemon
-
       - name: Wait for a VPN connection
         timeout-minutes: 1
         run: until ping -c 1 ${{ secrets.HOST }}; do sleep 2; done
 
-      # DEPLOY AQUI
-      - uses: actions/download-artifact@v2
-        name: Downloading artifact
-        with:
-          name: app-build
-      - name: Uploading to server
+     - name: Creating test file
+        run: |
+          echo "test" > test_${{ github.sha }}.txt
+
+      - name: Test scp
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: 22
-          source: ${{ github.sha }}.tar.gz
+          source: test_${{ github.sha }}.txt
           target: /tmp/${{ github.repository }}/
-      - name: Extracting files
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: 22
-          script: |
-            mkdir -p /home/${{ github.repository }}/releases/${{ github.sha }}
-            tar -xzf /temp/${{ github.repository }}/${{ github.sha }}.tar.gz -C /home/${{ github.repository }}/releases/${{ github.sha }}
-      - name: Activating release
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: 22
-          script: |
-            ln -s -n -f /home/${{ github.repository }}/releases/${{ github.sha }}/build /var/www/html/teste/current
 
-      - name: Clean up
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: 22
-          script: |
-            rm /tmp/${{ github.repository }}*.tar.gz
-            cd /home/${{ github.repository }}/releases && ls -t -1 | tail -n +4 | xargs rm -rf
+      # DEPLOY here
+      # - uses: actions/download-artifact@v2
+      #   name: Downloading artifact
+      #   with:
+      #     name: app-build
+      # - name: Uploading to server
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     port: 22
+      #     source: ${{ github.sha }}.tar.gz
+      #     target: /tmp/${{ github.repository }}/
+      # - name: Extracting files
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     port: 22
+      #     script: |
+      #       mkdir -p /home/${{ github.repository }}/releases/${{ github.sha }}
+      #       tar -xzf /temp/${{ github.repository }}/${{ github.sha }}.tar.gz -C /home/${{ github.repository }}/releases/${{ github.sha }}
+      # - name: Activating release
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     port: 22
+      #     script: |
+      #       ln -s -n -f /home/${{ github.repository }}/releases/${{ github.sha }}/build /var/www/html/teste/current
+
+      # - name: Clean up
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     port: 22
+      #     script: |
+      #       rm /tmp/${{ github.repository }}*.tar.gz
+      #       cd /home/${{ github.repository }}/releases && ls -t -1 | tail -n +4 | xargs rm -rf
 
       - name: Kill VPN connection
         if: always()
         run: |
           sudo killall openvpn
-
-        # with vpn log file
-        # run: |
-        #   sudo chmod 777 vpn.log
-        #   sudo killall openvpn
-
-      # with vpn log file
-      # - name: Upload VPN logs
-      #   uses: actions/upload-artifact@v2
-      #   if: always()
-      #   with:
-      #     name: VPN logs
-      #     path: vpn.log
