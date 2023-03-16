@@ -76,7 +76,7 @@ jobs:
           source: test_${{ github.sha }}.txt
           target: /tmp/builds/${{ github.event.repository.name }}/
 
-      DEPLOY here
+      # DEPLOY here
       - uses: actions/download-artifact@v2
         name: Downloading artifact
         with:
