@@ -74,52 +74,52 @@ jobs:
           password: ${{ secrets.KEY }}
           port: 22
           source: test_${{ github.sha }}.txt
-          target: /tmp/${{ github.event.repository.name }}/
+          target: /tmp/builds/${{ github.event.repository.name }}/
 
-      # DEPLOY here
-      # - uses: actions/download-artifact@v2
-      #   name: Downloading artifact
-      #   with:
-      #     name: app-build
-      # - name: Uploading to server
-      #   uses: appleboy/scp-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     port: 22
-      #     source: ${{ github.sha }}.tar.gz
-      #     target: /tmp/${{ github.repository }}/
-      # - name: Extracting files
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     port: 22
-      #     script: |
-      #       mkdir -p /home/${{ github.repository }}/releases/${{ github.sha }}
-      #       tar -xzf /temp/${{ github.repository }}/${{ github.sha }}.tar.gz -C /home/${{ github.repository }}/releases/${{ github.sha }}
-      # - name: Activating release
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     port: 22
-      #     script: |
-      #       ln -s -n -f /home/${{ github.repository }}/releases/${{ github.sha }}/build /var/www/html/teste/current
+      DEPLOY here
+      - uses: actions/download-artifact@v2
+        name: Downloading artifact
+        with:
+          name: app-build
+      - name: Uploading to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.KEY }}
+          port: 22
+          source: ${{ github.sha }}.tar.gz
+          target: /tmp/builds/${{ github.event.repository.name }}/
+      - name: Extracting files
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            mkdir -p /home/${{ github.event.repository.name }}/releases/${{ github.sha }}
+            tar -xzf /tmp/builds/${{ github.event.repository.name }}/${{ github.sha }}.tar.gz -C /home/${{ github.event.repository.name }}/releases/${{ github.sha }}
+      - name: Activating release
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            ln -s -n -f /home/${{ github.event.repository.name }}/releases/${{ github.sha }}/build /var/www/html/teste/current
 
-      # - name: Clean up
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     port: 22
-      #     script: |
-      #       rm /tmp/${{ github.repository }}*.tar.gz
-      #       cd /home/${{ github.repository }}/releases && ls -t -1 | tail -n +4 | xargs rm -rf
+      - name: Clean up
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            rm /tmp/builds/${{ github.event.repository.name }}/*.tar.gz
+            cd /home/${{ github.event.repository.name }}/releases && ls -t -1 | tail -n +4 | xargs rm -rf
 
       - name: Kill VPN connection
         if: always()
