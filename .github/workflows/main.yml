@@ -74,7 +74,7 @@ jobs:
           password: ${{ secrets.KEY }}
           port: 22
           source: test_${{ github.sha }}.txt
-          target: /tmp/${{ github.repository }}/
+          target: /tmp/${{ github.event.repository.name }}/
 
       # DEPLOY here
       # - uses: actions/download-artifact@v2
