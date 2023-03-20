@@ -73,7 +73,7 @@ const App = () => {
         Call Api
       </button>
 
-      <h1>Number of Github repositories</h1>
+      <h1>Obrigado Aru, seu lindo!</h1>
       <p>
         <strong>Node: </strong>
         {nodeResults.toString()}
