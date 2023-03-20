@@ -32,7 +32,7 @@ jobs:
         run: tar -czf "${GITHUB_SHA}".tar.gz build
 
       - name: Storing artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: app-build
           path: ${{ github.sha }}.tar.gz
@@ -68,7 +68,7 @@ jobs:
         run: echo "DATE=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
       - name: Timestamp temp
         run: echo ${{ env.DATE }}
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         name: Downloading artifact
         with:
           name: app-build
