@@ -99,7 +99,7 @@ jobs:
           password: ${{ secrets.KEY }}
           port: 22
           script: |
-            ln -s -n -f /releases/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}/build /var/www/html/teste
+            ln -s -n -f /releases/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}/build /var/www/html/intranet
 
       - name: Clean up
         uses: appleboy/ssh-action@master
