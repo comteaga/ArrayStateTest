@@ -26,23 +26,16 @@ jobs:
       - name: Build project
         run: CI=false npm run build --if-present
 
-      - name: Get current date
-        id: date
-        run: echo "DATE=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
-
-      - name: Timestamp temp
-        run: echo ${{ env.DATE }}
-
       - name: Creating deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf "${{ env.DATE }}_${GITHUB_SHA}".tar.gz build
+        run: tar -czf "${GITHUB_SHA}".tar.gz build
 
       - name: Storing artifact
         uses: actions/upload-artifact@v2
         with:
           name: app-build
-          path: ${{ env.DATE }}_${{ github.sha }}.tar.gz
+          path: ${{ github.sha }}.tar.gz
           retention-days: 1
 
   connect-vpn:
@@ -70,6 +63,11 @@ jobs:
         run: until ping -c 1 ${{ secrets.HOST }}; do sleep 2; done
 
       # DEPLOY here
+      - name: Get current date
+        id: date
+        run: echo "DATE=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
+      - name: Timestamp temp
+        run: echo ${{ env.DATE }}
       - uses: actions/download-artifact@v2
         name: Downloading artifact
         with:
@@ -81,7 +79,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.KEY }}
           port: 22
-          source: ${{ env.DATE }}_${{ github.sha }}.tar.gz
+          source: ${{ github.sha }}.tar.gz
           target: /temp/builds/${{ github.event.repository.name }}/
       - name: Extracting files
         uses: appleboy/ssh-action@master
@@ -91,8 +89,8 @@ jobs:
           password: ${{ secrets.KEY }}
           port: 22
           script: |
-            mkdir -p /releases/${{ github.event.repository.name }}/releases/${{ env.DATE }}_${{ github.sha }}
-            tar -xzf /temp/builds/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}.tar.gz -C /releases/${{ github.event.repository.name }}/releases/${{ env.DATE }}_${{ github.sha }}
+            mkdir -p /releases/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}
+            tar -xzf /temp/builds/${{ github.event.repository.name }}/${{ github.sha }}.tar.gz -C /releases/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}
       - name: Activating release
         uses: appleboy/ssh-action@master
         with:
@@ -101,7 +99,7 @@ jobs:
           password: ${{ secrets.KEY }}
           port: 22
           script: |
-            ln -s -n -f /releases/${{ github.event.repository.name }}/releases/${{ env.DATE }}_${{ github.sha }}/build /var/www/html/teste
+            ln -s -n -f /releases/${{ github.event.repository.name }}/${{ env.DATE }}_${{ github.sha }}/build /var/www/html/teste
 
       - name: Clean up
         uses: appleboy/ssh-action@master
@@ -112,7 +110,7 @@ jobs:
           port: 22
           script: |
             rm /temp/builds/${{ github.event.repository.name }}/*.tar.gz
-            cd /releases/${{ github.event.repository.name }}/releases && ls -t -1 | tail -n +4 | xargs rm -rf
+            cd /releases/${{ github.event.repository.name }} && ls -t -1 | tail -n +4 | xargs rm -rf
 
       - name: Kill VPN connection
         if: always()
