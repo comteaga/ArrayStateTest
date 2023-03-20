@@ -25,17 +25,24 @@ jobs:
 
       - name: Build project
         run: CI=false npm run build --if-present
+      
+       - name: Get current date
+        id: date
+        run: echo "DATE=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
+
+      - name: Timestamp temp
+        run: echo ${{ env.DATE }}
 
       - name: Creating deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: tar -czf "${GITHUB_SHA}".tar.gz build
+        run: tar -czf "${{ env.DATE }}_${GITHUB_SHA}".tar.gz build
 
       - name: Storing artifact
         uses: actions/upload-artifact@v2
         with:
           name: app-build
-          path: ${{ github.sha }}.tar.gz
+          path: ${{ env.DATE }}_${{ github.sha }}.tar.gz
           retention-days: 1
 
   connect-vpn:
@@ -63,11 +70,6 @@ jobs:
         run: until ping -c 1 ${{ secrets.HOST }}; do sleep 2; done
 
       # DEPLOY here
-      - name: Get current date
-        id: date
-        run: echo "DATE=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
-      - name: Timestamp temp
-        run: echo ${{ env.DATE }}
       - uses: actions/download-artifact@v2
         name: Downloading artifact
         with:
